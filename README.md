@@ -1,28 +1,32 @@
-# RowArmor: Efficient and Comprehensive Protection Against DRAM Disturbance Attacks
+# Artifact Evaluation for "RowArmor: Efficient and Comprehensive Protection Against DRAM Disturbance Attacks" (ASPLOS 2026)
 
-## Introduction
+## Overview
+This repository provides the artifact for the ASPLOS 2026 paper **RowArmor**.
 
-This is the code artifact for the paper 
 **"RowArmor: Efficient and Comprehensive Protection Against DRAM Disturbance Attacks"**. 
 
 Authors: Yoonyul Yoo (Sungkyunkwan University), Minbok Wi (Seoul National University), Jaeho Shin (Sungkyunkwan University), Yesin Ryu (Samsung Electronics), Yoojin Kim (Sungkyunkwan University), Seonyong Park (Seoul National University), Saeid Gorgin (Sungkyunkwan University), Jung Ho Ahn (Seoul National University), Jungrae Kim (Sungkyunkwan University).
 
-## Contents
-- [1. Requirements](#1-requirements)
-- [2. Getting Started](#2-getting-started)
-- [3. Docker](#3-docker)
++ List of experiments to reproduce:
+  + Security analysis of RowArmor
+  + Performance evaluation of RowArmor and other Row Hammer mitigation schemes (Figure)
+  + Reliability analysis for RowArmor
 
-## 1. Requirements
-**Run-time Environment:**  We suggest using a Linux distribution equipped with a C++-compliant compiler (e.g., g++ 10 or newer) for the reliability and security evaluations. For example, Ubuntu 18.04 or later is sufficient. This artifact has been tested on Ubuntu 18.04.6 LTS and is compatible with most modern Linux systems.
-
-**Security & Reliability Evaluations:**
-- **g++** with C++17 support (tested with version 9.4.0)
-- **Python3** (tested with version 3.9.7)
++ Structure of this repository:
+  + [security_eval](./security_eval/): RowArmor's security evaluation directory
+  + [perf_simulation](./perf_simulation/): RowArmor's performance simulation directory (Figure 9)
+  + [reliability_eval](./reliability_eval/): RowArmor's reliability evaluation directory
 
 
-## 2. Getting Started
+## Content
+- [1. Security Evaluation](#security-evaluation)
+- [2. Performance Simulation](#performance-simulation)
+- [3. Reliability Evaluation](#reliability-evaluation)
 
-### Clone the artifact.
+
+## Getting Started
+
+### Clone the artifacts.
 We presume that the user's home directory serves as the working directory
 
    ```bash
@@ -33,11 +37,17 @@ We presume that the user's home directory serves as the working directory
 
 ## 
 
-Please run the following steps to regenerate the evaluation:
+## Security Evaluation
 
-The evaluation can be easily executed using the ```sim.sh``` script located in the ```RowArmor/sim``` directory.
+### System specification
+No special hardware requirements. Any modern CPU is sufficient.
 
-### run the *security* code.
+### Required Dependencies
+We tested our evaluation under the following.
++ OS: Ubuntu 18.04.6 LTS (Linux 5.4.0-150-generic)
++ Compiler: gcc/g++  9.4.0 (Ubuntu 9.4.0-1ubuntu1~18.04)
+
+### Run the security_eval.
 
   ```bash
    $ cd RowArmor/sim
@@ -62,28 +72,247 @@ Below is a snapshot of the output:
 
 
 
-### Run the *Reliability* code
 
-To evaluate reliability, use the Python script provided in the `RowArmor/Reliability/` directory.  
-The simulation runs Monte Carlo-based fault injections by varying ECC and fault parameters.
+
+## Performance Simulation
+
+This artifact consists of the following components:
++ [McSim](./perf_simulation/McSim/): Simulator's back-end
++ [Pthread](./perf_simulation/Pthread): Simulator's front-end
++ [mdfiles](./perf_simulation/mdfiles): Machine description files (mdfiles) for simulation
++ [runfiles](./perf_simulation/runfiles): Run files for simulation
++ [simulation_scripts](./perf_simulation/simulation_scripts): Simulation scripts for running simulation
++ [results](./perf_simulation/results): Directory for simulation results
+
+### System specification
+
+Since a large number of simulations need to be executed, we recommend running them in parallel on **a dual-socket server with large memory capacity**.
+We tested and ran the simulation in the following system specification.
+
+| Hardware | Description | 
+|----------|-------------|
+| CPU      | 2x Intel Xeon Gold 6338 @2.0 GHz (or equivalent) |
+| Memory   | 512 GB DDR4 |
+
+
+### Required Dependencies
+We tested our simulator under the following.
+
++ OS: Ubuntu 20.04.6 LTS (Linux 5.4.0-214-generic)
++ Compiler: gcc/g++ 11.4.0 (Ubuntu 11.4.0)
++ Tool: [Intel Pin 3.7](https://software.intel.com/sites/landingpage/pintool/downloads/pin-3.7-97619-g0d0c92f4f-gcc-linux.tar.gz)
+
+Also, we need to turn off ASLR for simulation.
+```bash
+# sudo privilege needed
+echo 0 > /proc/sys/kernel/randomize_va_space
+```
+
+To build the McSimA+ simulator on Linux system, first install the required packages with the following commands:
+
++ `libelf`: 
+```bash
+wget https://launchpad.net/ubuntu/+archive/primary/+files/libelf_0.8.13.orig.tar.gz
+tar -zxvf libelf_0.8.13.orig.tar.gz
+cd libelf-0.8.13.orig/
+./configure
+make
+make install
+```
+
++ `m4`:
+```bash
+wget http://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz
+tar -zxvf m4-1.4.18.tar.gz
+cd m4-1.4.18/
+./configure
+make
+make install
+```
+
++ `elfutils`:
+```bash
+wget https://fedorahosted.org/releases/e/l/elfutils/0.161/elfutils-0.161.tar.bz2
+tar -xvf elfutils-0.161.tar.bz2
+cd elfutils-0.161
+./configure --prefix=$HOME
+make
+make install
+export COMPILER_PATH=/usr/bin
+```
+
+
++ `libdwarf`:
+```bash
+git clone git://libdwarf.git.sourceforge.net/gitroot/libdwarf/libdwarf
+cd libdwarf
+./configure --enable-shared
+make
+```
+
+### Setting up configuration files
+
+First, download the trace files using the given [download_traces.py](./traces/download_traces.py) script.
+```bash
+# Download the trace files.
+cd traces
+./download_traces.py
+tar -zxvf mcsim_cpu2017_traces.tar.gz
+```
+
+For configuration files, we provide the machine description files (mdfiles) in [mdfiles](./perf_simulation/mdfiles).
+
+For runfiles, we provide the [generate_runfiles.py](./perf_simulation/runfiles/generate_runfiles.py) for generating runfiles (single, rate, and mix) with a given trace path.
+```bash
+# Generate simulator's configuration files (runfiles)
+cd ../perf_simulation/runfiles
+./generate_runfiles.py -b <path-to-trace>
+```
+
+Lastly, we provide the [generate_simulation_scripts.py](./perf_simulation/simulation_scripts/generate_simulation_scripts.py) for generating scripts for running the simulations.
+```bash
+# Generate run scripts for simulation
+cd ../simulation_scripts
+./generate_simulation_scripts.py
+```
+
+### Building McSimA+ simulator
+
+McSimA+ simulator utilizes [Intel Pin 3.7](https://www.intel.com/content/www/us/en/developer/articles/tool/pin-a-binary-instrumentation-tool-downloads.html) for its front-end. 
+
+1. Download Intel Pin 3.7 as follows:
+```bash
+cd perf_simulation
+wget https://software.intel.com/sites/landingpage/pintool/downloads/pin-3.7-97619-g0d0c92f4f-gcc-linux.tar.gz 
+tar -zxvf pin-3.7-97619-g0d0c92f4f-gcc-linux.tar.gz
+# Generate symbolic link for simulator
+ln -s "$(pwd)"/pin-3.7-97619-g0d0c92f4f-gcc-linux ./pin
+```
+
+2. Build the McSimA+ simulator front-end.
+```bash
+cd Pthread
+make PIN_ROOT="$(pwd)"/../pin obj-intel64/mypthreadtool.so -j
+make PIN_ROOT="$(pwd)"/../pin obj-intel64/libmypthread.a
+```
+
+3. Build the McSimA+ simulator back-end. 
+```bash
+cd ../McSim
+export PIN="$(pwd)"/../pin/pin
+export PINTOOL="$(pwd)"/../Pthread/obj-intel64/mypthreadtool.so
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+make INCS=-I"$(pwd)"/../pin/extras/xed-intel64/include/xed -j
+
+# or you can source and run given scripts
+source setup_mcsim
+./build_mcsim.sh
+```
+
+### Running experiments
+
+To directly run the McSimA+ simulation:
+```bash
+setarch x86_64 -R ./simulator/McSim/obj_mcsim/mcsim -runfile <path-to-runfile> -mdfile <path-to-mdfile> 2>&1 > <path-to-output>
+```
+
+We recommend to use the scripts for running simulation in parallel.
+We provide [runner.py](./perf_simulation/simulation_scripts/runner.py) script to run multiple performance simulation in parallel as follows:
+```bash
+numactl -N {node} -m {memory_node} ./runner.py -p {num_processes} -s <target-simulation-script>
+# Trace-driven simulation generates ls processes. We need to kill those processes after finishing the simulation.
+killall -9 ls
+```
+
+### Parse results
+
+After running simulations, we need to parse the raw results files.
+First, we extract and derive IPC from the single process results (single IPCs).
+Then, we derive weighted speedups using single IPCs from the rate/mix processes results.
+
+For this, we provide two parsing scripts.
+
++ [parse_single.py](./perf_simulation/results/parse_single.py): Parse single workloads from the baseline mdfiles.
++ [parse_results.py](./perf_simulation/results/parse_results.py): Parse rate and mix workloads from the given single IPCs.
+
+```bash
+cd results
+./parse_single.py
+```
+
+After parsing single IPCs, we need to modify the [parse_results.py]() scripts.
+```bash
+vi parse_results.py
+# change ipc_list
+ipc_list = [ 
+    0.803,  0.93,  0.81, 1.027, 0.834, 1.221, 1.394, 1.007,  0.69, 0.607, 
+    0.655, 0.606, 0.539, 0.557, 0.419, 1.008, 2.436, 1.691, 1.428, 1.199, 
+    1.234, 1.736,  0.43, 0.354, 1.367, 0.704, 0.89, 0.904,
+]
+```
+
+Then, we can parse the results:
+```bash
+./parse_results.py -t {benign or malicious} -r {runfiles} -m {mdfiles}
+```
+
+## Contact
+
+For questions or issues, please contact:
+Minbok Wi [minbok.wi@scale.snu.ac.kr](mailto:minbok.wi@scale.snu.ac.kr)
+
+
+
+
+## Reliability Evaluation
+
+### System specification
+No special hardware requirements. Any modern CPU is sufficient.
+
+### Required Dependencies
+We tested our evaluation under the following.
++ OS: Ubuntu 18.04.6 LTS (Linux 5.4.0-150-generic)
++ Compiler: gcc/g++  9.4.0 (Ubuntu 9.4.0-1ubuntu1~18.04)
++ Interpreter: Python 3.9.7
+
+
+### Run the *reliability_eval* 
+
+To evaluate reliability, use the Python script provided in the `RowArmor/reliability_eval/` directory.  
+The simulation runs Monte Carlo-based error injections by varying ECC and fault parameters.
 
 ```bash
 $ cd RowArmor/sim
 $ bash ./sim.sh reliability 
 ```
 
-This script launches multiple simulation processes in parallel using the following three parameter sets:
+This script launches multiple simulation processes in parallel using the following configure.
 
-**Config Control:**  
-- `oecc` – On-Die ECC (e.g., `[0, 1]`)
-- `fault` – Fault pattern index (e.g., `[0, 1, 2, ..., 8]`)
-- `recc` – Rank-level ECC strength (e.g., `[1, 2, 3]`)
+### Setting up Configuration Files
+
+To run the reliability simulation, you need to configure error injection and ECC settings. Follow the steps below to set up the necessary configuration files and parameters.
+
+---
+
+#### 1. Set error injection and ECC parameters in [`run.py`](./reliability_eval/run.py)
+
+We provide customizable lists to define OD-ECC status, fault types, and rank-level ECC strengths:
+
+```python
+oecc = [0, 1]                        # On-Die ECC: off (0), on (1)
+fault = [0, 1, 2, 3, 4, 5, 6, 7, 8]  # Fault types (see details below)
+recc = [1, 2, 3]                     # Rank-level ECC: OPC, QPC, AMDCHIPKILL
+```
+
+#### Reference enums in [`Fault_sim.cpp`](./reliability_eval/Fault_sim.cpp)
+
+The available parameter values are defined as follows:
 
 ```cpp
 enum OECC_TYPE {
   OECC_OFF = 0,
   OECC_ON  = 1
-}; // OD-ECC status
+};
 
 enum FAULT_TYPE {
   SBE = 0,        // Single-Bit Error
@@ -94,7 +323,7 @@ enum FAULT_TYPE {
   SCE_SBE = 5,    // SCE + SBE
   SCE_DBE = 6,    // SCE + DBE
   SCE_SCE = 7,    // SCE + SCE
-  RANK = 8        // Rank-level error
+  RANK = 8        // Rank-Level Error
 };
 
 enum RECC_TYPE {
@@ -104,25 +333,33 @@ enum RECC_TYPE {
   AMDCHIPKILL  = 3  // AMD Chipkill
 };
 ```
-You can modify these values directly in `run.py`:
 
-```python
-oecc = [0, 1]
-fault = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-recc = [1, 2, 3]
+---
+
+#### 2. Control the number of simulation iterations
+
+To change the number of fault injections per experiment, edit the following line in [`Fault_sim.cpp`](./reliability_eval/Fault_sim.cpp):
+
+```cpp
+#define RUN_NUM 100000000 // line 49
 ```
+
+---
+
+#### 3. Run the reliability simulation
+
+Once configuration is complete, you can run the reliability simulation using:
+
+```bash
+cd Reliability
+python3 run.py
+```
+
 
 Each combination will launch the following command in parallel:
 
 ```bash
 ./Fault_sim_start <oecc> <fault> <recc> &
-```
-
-**Iteration Control:**  
-  To control the number of iterations per simulation, modify the following line in `Fault_sim.cpp`:
-
-```cpp
-#define RUN_NUM 100000000 // line 49
 ```
 
 #### Example Run Steps
@@ -134,41 +371,7 @@ Here is a sample execution of the reliability simulation using the default param
 
 
 
-## 3. Docker
 
-We provide a pre-built Docker image for convenience.  
-You can either download it from Docker Hub or use the link below to load it manually.
-
-#### Option 1. Dokcer Hub
-
-You can also pull the image directly from Docker Hub:
-[View on Docker Hub](https://hub.docker.com/r/wogh533/rowarmor)
-
-```bash
-$ docker pull wogh533/rowarmor:latest
-$ docker run -it wogh533/rowarmor:latest
-```
-
-
-#### Option 2. Download from Google Drive
-
-You can download the Docker image (`rowarmor_image.tar`) from the following link:
-
-[Download Docker Image (rowarmor_image.tar)](https://drive.google.com/uc?export=download&id=1Gz4bWfNjS9mhAaft4xv8FV_BsFAkju4B
-)
-
-Once downloaded, run the following commands:
-
-```bash
-# Load the Docker image
-$ docker load -i rowarmor_image.tar
-
-# Run the container interactively
-$ docker run -it --rm rowarmor:latest
-
-```
-
-If you encounter any issues running the image, please open an issue or contact the authors.
 
 
 

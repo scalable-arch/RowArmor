@@ -1,0 +1,9 @@
+#!/bin/bash
+
+CURR_DIR=$(pwd)
+
+export PIN="${CURR_DIR}/../pin/pin"
+export PINTOOL="${CURR_DIR}/../Pthread/obj-intel64/mypthreadtool.so"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
+echo "[+] McSimA+ setup done."

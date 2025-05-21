@@ -1,0 +1,7 @@
+*.out
+*.sh
+perf_simulation/pin-3.7-97619-g0d0c92f4f-gcc-linux
+perf_simulation/Pthread/obj-intel64
+perf_simulation/McSim/obj_mcsim
+perf_simulation/runfiles/malicious
+perf_simulation/runfiles/benign
