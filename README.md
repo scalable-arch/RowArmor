@@ -9,18 +9,18 @@ Authors: Yoonyul Yoo (Sungkyunkwan University), Minbok Wi (Seoul National Univer
 
 + List of experiments to reproduce:
   + Security analysis of RowArmor
-  + Performance evaluation of RowArmor and other Row Hammer mitigation schemes (Figure)
+  + Performance evaluation of RowArmor and other Row Hammer mitigation schemes
   + Reliability analysis for RowArmor
 
 + Structure of this repository:
   + [security_eval](./security_eval/): RowArmor's security evaluation directory
-  + [perf_simulation](./perf_simulation/): RowArmor's performance simulation directory (Figure 9)
+  + [performance_eval](./performance_eval/): RowArmor's performance simulation directory
   + [reliability_eval](./reliability_eval/): RowArmor's reliability evaluation directory
 
 
 ## Content
 - [1. Security Evaluation](#security-evaluation)
-- [2. Performance Simulation](#performance-simulation)
+- [2. Performance Evaluation](#performance-evaluation)
 - [3. Reliability Evaluation](#reliability-evaluation)
 
 
@@ -77,12 +77,13 @@ Below is a snapshot of the output:
 ## Performance Simulation
 
 This artifact consists of the following components:
-+ [McSim](./perf_simulation/McSim/): Simulator's back-end
-+ [Pthread](./perf_simulation/Pthread): Simulator's front-end
-+ [mdfiles](./perf_simulation/mdfiles): Machine description files (mdfiles) for simulation
-+ [runfiles](./perf_simulation/runfiles): Run files for simulation
-+ [simulation_scripts](./perf_simulation/simulation_scripts): Simulation scripts for running simulation
-+ [results](./perf_simulation/results): Directory for simulation results
++ [McSim](./performance_eval/McSim/): Simulator's back-end
++ [Pthread](./performance_eval/Pthread): Simulator's front-end
++ [mdfiles](./performance_eval/mdfiles): Machine description files (mdfiles) for simulation
++ [runfiles](./performance_eval/runfiles): Run files for simulation
++ [simulation_scripts](./performance_eval/simulation_scripts): Simulation scripts for running simulation
++ [results](./performance_eval/results): Directory for simulation results
++ [traces](./performance_eval/traces): Directory for trace files
 
 ### System specification
 
@@ -102,15 +103,9 @@ We tested our simulator under the following.
 + Compiler: gcc/g++ 11.4.0 (Ubuntu 11.4.0)
 + Tool: [Intel Pin 3.7](https://software.intel.com/sites/landingpage/pintool/downloads/pin-3.7-97619-g0d0c92f4f-gcc-linux.tar.gz)
 
-Also, we need to turn off ASLR for simulation.
-```bash
-# sudo privilege needed
-echo 0 > /proc/sys/kernel/randomize_va_space
-```
-
 To build the McSimA+ simulator on Linux system, first install the required packages with the following commands:
 
-+ `libelf`: 
++ `libelf`:
 ```bash
 wget https://launchpad.net/ubuntu/+archive/primary/+files/libelf_0.8.13.orig.tar.gz
 tar -zxvf libelf_0.8.13.orig.tar.gz
@@ -120,34 +115,9 @@ make
 make install
 ```
 
-+ `m4`:
++ `m4`, `elfutils`, `libdwarf`:
 ```bash
-wget http://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.gz
-tar -zxvf m4-1.4.18.tar.gz
-cd m4-1.4.18/
-./configure
-make
-make install
-```
-
-+ `elfutils`:
-```bash
-wget https://fedorahosted.org/releases/e/l/elfutils/0.161/elfutils-0.161.tar.bz2
-tar -xvf elfutils-0.161.tar.bz2
-cd elfutils-0.161
-./configure --prefix=$HOME
-make
-make install
-export COMPILER_PATH=/usr/bin
-```
-
-
-+ `libdwarf`:
-```bash
-git clone git://libdwarf.git.sourceforge.net/gitroot/libdwarf/libdwarf
-cd libdwarf
-./configure --enable-shared
-make
+apt-get install -y m4 elfutils libdwarf-dev
 ```
 
 ### Setting up configuration files
@@ -155,21 +125,21 @@ make
 First, download the trace files using the given [download_traces.py](./traces/download_traces.py) script.
 ```bash
 # Download the trace files.
-cd traces
-./download_traces.py
+cd performance_eval/traces
+./download_traces.sh
 tar -zxvf mcsim_cpu2017_traces.tar.gz
 ```
 
-For configuration files, we provide the machine description files (mdfiles) in [mdfiles](./perf_simulation/mdfiles).
+For configuration files, we provide the machine description files (mdfiles) in [mdfiles](./performance_eval/mdfiles).
 
-For runfiles, we provide the [generate_runfiles.py](./perf_simulation/runfiles/generate_runfiles.py) for generating runfiles (single, rate, and mix) with a given trace path.
+For runfiles, we provide the [generate_runfiles.py](./performance_eval/runfiles/generate_runfiles.py) for generating runfiles (single, rate, and mix) with a given trace path.
 ```bash
 # Generate simulator's configuration files (runfiles)
-cd ../perf_simulation/runfiles
+cd ../runfiles
 ./generate_runfiles.py -b <path-to-trace>
 ```
 
-Lastly, we provide the [generate_simulation_scripts.py](./perf_simulation/simulation_scripts/generate_simulation_scripts.py) for generating scripts for running the simulations.
+Lastly, we provide the [generate_simulation_scripts.py](./performance_eval/simulation_scripts/generate_simulation_scripts.py) for generating scripts for running the simulations.
 ```bash
 # Generate run scripts for simulation
 cd ../simulation_scripts
@@ -182,7 +152,7 @@ McSimA+ simulator utilizes [Intel Pin 3.7](https://www.intel.com/content/www/us/
 
 1. Download Intel Pin 3.7 as follows:
 ```bash
-cd perf_simulation
+cd ../ # performance_eval
 wget https://software.intel.com/sites/landingpage/pintool/downloads/pin-3.7-97619-g0d0c92f4f-gcc-linux.tar.gz 
 tar -zxvf pin-3.7-97619-g0d0c92f4f-gcc-linux.tar.gz
 # Generate symbolic link for simulator
@@ -217,7 +187,7 @@ setarch x86_64 -R ./simulator/McSim/obj_mcsim/mcsim -runfile <path-to-runfile> -
 ```
 
 We recommend to use the scripts for running simulation in parallel.
-We provide [runner.py](./perf_simulation/simulation_scripts/runner.py) script to run multiple performance simulation in parallel as follows:
+We provide [runner.py](./performance_eval/simulation_scripts/runner.py) script to run multiple performance simulation in parallel as follows:
 ```bash
 numactl -N {node} -m {memory_node} ./runner.py -p {num_processes} -s <target-simulation-script>
 # Trace-driven simulation generates ls processes. We need to kill those processes after finishing the simulation.
@@ -232,15 +202,15 @@ Then, we derive weighted speedups using single IPCs from the rate/mix processes 
 
 For this, we provide two parsing scripts.
 
-+ [parse_single.py](./perf_simulation/results/parse_single.py): Parse single workloads from the baseline mdfiles.
-+ [parse_results.py](./perf_simulation/results/parse_results.py): Parse rate and mix workloads from the given single IPCs.
++ [parse_single.py](./performance_eval/results/parse_single.py): Parse single workloads from the baseline mdfiles.
++ [parse_results.py](./performance_eval/results/parse_results.py): Parse rate and mix workloads from the given single IPCs.
 
 ```bash
 cd results
 ./parse_single.py
 ```
 
-After parsing single IPCs, we need to modify the [parse_results.py]() scripts.
+After parsing single IPCs, we need to modify the [parse_results.py](./performance_eval/results/parse_results.py) script.
 ```bash
 vi parse_results.py
 # change ipc_list
