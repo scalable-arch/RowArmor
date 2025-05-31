@@ -68,11 +68,6 @@ Here is a sample execution of the simulation using typical parameters.
   $ bash ./sim.sh security 16 0.01
   ```
 
-Below is a snapshot of the output:
-
-
-
-
 
 ## Performance Simulation
 
