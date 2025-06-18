@@ -97,7 +97,8 @@ def parse():
     
 def main():
     options, _ = parse()
-    binary = "setarch x86_64 -R {}".format(options.binary)
+    #binary = "setarch x86_64 -R {}".format(options.binary)
+    binary = "{}".format(options.binary)
     # benign single (we only include baseline)
     fname = "benign.baseline.single.sh"
     with open(fname, 'w') as f:
