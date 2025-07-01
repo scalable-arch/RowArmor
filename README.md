@@ -316,7 +316,7 @@ To change the number of fault injections per experiment, edit the following line
 Once configuration is complete, you can run the reliability simulation using:
 
 ```bash
-cd Reliability
+cd reliability_eval
 python3 run.py
 ```
 
@@ -326,6 +326,17 @@ Each combination will launch the following command in parallel:
 ```bash
 ./Fault_sim_start <oecc> <fault> <recc> &
 ```
+
+#### 4. Parse the simulation results
+
+After the reliability simulation completes, the results will be generated. You can then parse these results to extract meaningful data for analysis. Navigate back to the `reliability_eval` directory and run the `parse_results.py` script.
+
+
+```bash
+cd reliability_eval
+python3 parse_results.py
+```
+
 
 #### Example Run Steps
 
