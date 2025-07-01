@@ -8,5 +8,5 @@ $(EXEC): Fault_sim.cpp
 	$(CC) $(CFLAGS) Fault_sim.cpp -o $(EXEC)
 
 clean:
-	rm -f $(EXEC)
+	rm -f $(EXEC) *.S
 

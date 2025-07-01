@@ -1188,16 +1188,6 @@ int main(int argc, char* argv[])
     srand((unsigned int)time(NULL)); 
     double error_scenario;
     for(int runtime=0; runtime<RUN_NUM; runtime++){
-        if(runtime%1000000==0){
-            fprintf(fp3,"\n===============\n");
-            fprintf(fp3,"Runtime : %d/%d\n",runtime,RUN_NUM);
-            fprintf(fp3,"CE : %d\n",CE_cnt);
-            fprintf(fp3,"DUE : %d\n",DUE_cnt);
-            fprintf(fp3,"SDC : %d\n",SDC_cnt);
-            fprintf(fp3,"\n===============\n");
-	    fflush(fp3);
-        }
-
         // Linear block code
         for(int i=0; i<OOC_CHIP_NUM; i++)
             memset(Chip_array[i], 0, sizeof(unsigned int) * OECC_CW_LEN); 
@@ -1532,15 +1522,6 @@ int main(int argc, char* argv[])
 
             
     }
-
-    // final update
-    fprintf(fp3,"\n===============\n");
-    fprintf(fp3,"Runtime : %d\n",RUN_NUM);
-    fprintf(fp3,"CE : %d\n",CE_cnt);
-    fprintf(fp3,"DUE : %d\n",DUE_cnt);
-    fprintf(fp3,"SDC : %d\n",SDC_cnt);
-    fprintf(fp3,"\n===============\n");
-    fflush(fp3);
 
     // final update 
     fprintf(fp3,"\n===============\n");
