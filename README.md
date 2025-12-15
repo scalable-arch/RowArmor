@@ -8,8 +8,8 @@ This repository provides the artifact for the ASPLOS Summer 2026 paper **RowArmo
   + Performance evaluation of RowArmor and other Row Hammer mitigation schemes
 
 + Structure of this repository:
-  + [security_eval](): RowArmor's security evaluation directory (Figure 5, 6, 7)
-  + [perf_simulation](./perf_simulation/): RowArmor's performance simulation directory (Figure 8)
+  + [security_eval](): RowArmor's security evaluation directory (Figure 5, 6, 7, 8)
+  + [perf_simulation](./perf_simulation/): RowArmor's performance simulation directory (Figure 9)
 
 ## Security Evaluation
 
