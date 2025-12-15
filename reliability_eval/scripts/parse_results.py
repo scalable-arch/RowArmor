@@ -21,7 +21,9 @@ RECC_MAP = {
 }
 
 fault_params = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-recc_params = [1, 2, 3]
+recc_params  = [1, 2, 3]
+
+out_dir = "results"
 
 # --- Script Body ---
 
@@ -68,7 +70,7 @@ def main():
                 continue
 
             # File naming convention from C++ code: RECC + "_" + FAULT + ".S"
-            filename = f"{recc_name}_{fault_filename_str}.S"
+            filename = f"{out_dir}/{recc_name}_{fault_filename_str}.S"
             
             parsed_data = parse_result_file(filename)
             all_results[fault_report_name][recc_name] = parsed_data

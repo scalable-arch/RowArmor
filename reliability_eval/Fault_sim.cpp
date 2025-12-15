@@ -40,13 +40,12 @@
 #define SYMBOL_SIZE 8 // RECC ymbol size (GF(2^8)) -> optional use
 #define RECC_REDUN_SYMBOL_NUM 8 // rank-level ecc redundancy length (symbol) -> optional use
 
-#define AMDCHIPKILL_CW_SYMBOL_NUM 10 // AMD ecc codeword 길이 (symbol) -> optional use
+#define AMDCHIPKILL_CW_SYMBOL_NUM 10 // AMD ecc codeword length (symbol) -> optional use
 #define QOC_CW_SYMBOL_NUM 40 // QOC ecc codeword length (symbol) -> optional use
 #define OOC_CW_SYMBOL_NUM 80 // OOC ecc codeword length (symbol) -> optional use
 
 
-
-#define RUN_NUM 1000 // iteration
+#define RUN_NUM 10000 // iteration
 
 
 #define CONSERVATIVE_MODE 1 // 1: Conservavie mode, 0: Restrained mode
@@ -503,7 +502,7 @@ void error_correction_oecc(unsigned int *codeword)
 -------------------------------------------------------------------*/
 int error_correction_OOC(unsigned int *codeword_OOC)
 {
-   register int i,j,u,q ;
+   int i,j,u,q ;
 
    int elp[nn-OOC_kk+2][nn-OOC_kk], d[nn-OOC_kk+2], l[nn-OOC_kk+2], u_lu[nn-OOC_kk+2], s[nn-OOC_kk+1] ; 
    int count=0, syn_error=0, root[OOC_tt], loc[OOC_tt], z[OOC_tt+1], err[nn], reg[OOC_tt+1]; 
@@ -750,7 +749,8 @@ int error_correction_OOC(unsigned int *codeword_OOC)
 -------------------------------------------------------------------*/
 int error_correction_QOC(unsigned int *codeword)
 {
-   register int i,j,u,q ;
+   int i,j,u,q;
+
    int elp[nn-QOC_kk+2][nn-QOC_kk], d[nn-QOC_kk+2], l[nn-QOC_kk+2], u_lu[nn-QOC_kk+2], s[nn-QOC_kk+1] ; 
    int count=0, syn_error=0, root[QOC_tt], loc[QOC_tt], z[QOC_tt+1], err[nn], reg[QOC_tt+1]; 
    unsigned int recd[QOC_nn_short] = {0};
@@ -1132,7 +1132,7 @@ int main(int argc, char* argv[])
     ///////////////////////////////////////////////////////////////
 
     // 0. GF(2^8) primitive polynomial table 
-    FILE *fp=fopen("GF_2^8__primitive_polynomial.txt","r");
+    FILE *fp=fopen("inputs/GF_2^8__primitive_polynomial.txt","r");
     int primitive_count=0;
     while(1){
         char str_read[100];
@@ -1154,7 +1154,7 @@ int main(int argc, char* argv[])
 
     // 1. H_Matrix 
     // OECC (On-die ECC)
-    FILE *fp1=fopen("H_Matrix_OECC.txt","r");
+    FILE *fp1=fopen("inputs/H_Matrix_OECC.txt","r");
     while(1){
         unsigned int value;
         for(int row=0; row<OECC_REDUN_LEN; row++){
@@ -1178,6 +1178,9 @@ int main(int argc, char* argv[])
     oecc_recc_fault_type_assignment(OECC, FAULT, RECC, &oecc_type, &fault_type, &recc_type, atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
     
     string Result_file_name = RECC + "_" + FAULT + ".S";
+    if (argc > 4) { // set output directory
+        Result_file_name = string(argv[4]) + "/" + Result_file_name;
+    }
     FILE *fp3=fopen(Result_file_name.c_str(),"w"); 
 
     // 3. iteration

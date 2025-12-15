@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-O2
+CFLAGS=-O2 -Wno-unused-result
 EXEC=Fault_sim_start
 
 all: $(EXEC)
@@ -8,5 +8,4 @@ $(EXEC): Fault_sim.cpp
 	$(CC) $(CFLAGS) Fault_sim.cpp -o $(EXEC)
 
 clean:
-	rm -f $(EXEC) *.S
-
+	rm -f $(EXEC) *.S results/*.S
