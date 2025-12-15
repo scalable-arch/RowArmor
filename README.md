@@ -9,9 +9,79 @@ This repository provides the artifact for the ASPLOS Summer 2026 paper **RowArmo
 
 + Structure of this repository:
   + [security_eval](): RowArmor's security evaluation directory (Figure 5, 6, 7, 8)
+  + [reliability_eval](): RowArmor's reliability evaluation directory (Table 4)
   + [perf_simulation](./perf_simulation/): RowArmor's performance simulation directory (Figure 9)
 
 ## Security Evaluation
+
+
+## Reliability Evaluation
+
+This artifact consists of the following components:
++ [Fault_sim.cpp](./reliability_eval/Fault_sim.cpp): A Monte Carlo-based error injection simulator
++ [inputs](./reliability_eval/inputs): Ecc input files for the simulation
++ [scripts](./reliability_eval/scripts): Scripts to run the simulation and parse the results
++ [results](./reliability_eval/results): Directory for simulation results
+
+### System specification
+No special hardware requirements. Any modern CPU is sufficient.
+
+### Required Dependencies
+We tested our evaluation under the following.
+
++ OS: Ubuntu 18.04.6 LTS (Linux 5.4.0-150-generic)
++ Compiler: gcc/g++  9.4.0 (Ubuntu 9.4.0-1ubuntu1~18.04)
++ Interpreter: Python 3.9.7
+
+
+### Setting up Configuration Files
+
+To run the reliability simulation, you need to configure error injection and ECC settings. Follow the steps below to set up the necessary configuration files and parameters.
+
+First, set error injection and ECC parameters in [`run.py`](./reliability_eval/run.py).
+We provide customizable lists to define OD-ECC status, fault types, and rank-level ECC strengths.
+You can reference enums in [`Fault_sim.cpp`](./reliability_eval/Fault_sim.cpp).
+
+```python
+oecc  = [0, 1]                        # On-Die ECC: off (0), on (1)
+fault = [0, 1, 2, 3, 4, 5, 6, 7, 8]   # Fault types (see details in Fault_sim.cpp)
+recc  = [1, 2, 3]                     # Rank-level ECC: AMDCHIPKILL, QPC, OOC 
+```
+
+Then, set the number of simulation iterations.
+To change the number of fault injections per experiment, edit the following line in [`Fault_sim.cpp`](./reliability_eval/Fault_sim.cpp):
+
+```cpp
+#define RUN_NUM 100000000 // line 48
+```
+
+### Run the *reliability_eval* 
+
+To run the simulation, use the shell script provided in the `RowArmor/reliability_eval/scripts/` directory.  
+The simulation runs Monte Carlo-based error injections by varying ECC and fault parameters.
+
+```bash
+$ cd reliability_eval/scripts
+$ bash ./sim.sh
+```
+
+This script launches multiple simulation processes in parallel and parses the results after the simulations complete.
+
+To launch the simulations and parse the results manually, you can run the following commands.
+
+```bash
+cd reliability_eval
+
+# 1. Build the simulator
+make
+
+# 2. Run a simulation
+./Fault_sim_start <oecc-type> <fault-type> <recc-type> <path-to-output>
+
+# 3. Parse the results
+python3 scripts/parse_results.py
+```
+
 
 
 ## Performance Simulation
