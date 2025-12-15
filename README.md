@@ -268,6 +268,7 @@ Then, we can parse the results and generate csv files for graph:
 ```bash
 ./parse_results.py
 ./plot_csv.py
+./plot_figure9.py
 ```
 
 ## Contact
