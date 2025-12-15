@@ -16,8 +16,8 @@ FAULT_MAP = {
 
 RECC_MAP = {
     1: "AMDCHIPKILL",
-    2: "OOC",
-    3: "QOC"
+    2: "QPC",
+    3: "OOC"
 }
 
 fault_params = [0, 1, 2, 3, 4, 5, 6, 7, 8]
@@ -52,6 +52,9 @@ def parse_result_file(filepath):
     return results
 
 def main():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(script_dir + "/../")
+
     """Main execution function"""
     all_results = {}
 
@@ -89,7 +92,7 @@ def main():
     for fault_name in fault_names_ordered:
         for metric in ['CE', 'DUE', 'SDC']:
             scenario_label = fault_name if metric == 'CE' else ''
-            line = f"{scenario_label:<18} {metric+' (%)':<4}"
+            line = f"{scenario_label:<18} {metric+' (%)':<7}"
             
             for recc_name in recc_names_ordered:
                 value = all_results.get(fault_name, {}).get(recc_name, {}).get(metric, 0.0) * 100

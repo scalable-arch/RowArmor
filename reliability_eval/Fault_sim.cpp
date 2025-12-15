@@ -23,7 +23,7 @@
 #define CHIP_WIDTH 4
 #define BLHEIGHT 16 // Rank-level ECC (RECC)Burst length 
 
-#define OECC_CW_LEN 64 // AMD, QOC OECC codeword length (bit)
+#define OECC_CW_LEN 64 // AMD, QPC OECC codeword length (bit)
 #define OOC_OECC_CW_LEN 32 // OOC codeword length (bit)
 #define OECC_DATA_LEN 64 // OECC dataward length (bit)
 #define OECC_REDUN_LEN 4 // OECC redundancy length (bit)
@@ -34,18 +34,18 @@
 #define RECC_REDUN_LEN 16 // RL-ECC redundancy length
 
 #define AMDCHIPKILL_CW_LEN 80 // AMD codeword length (bit)
-#define QOC_CW_LEN 320 // QOC codeword length (bit)
+#define QPC_CW_LEN 320 // QPC codeword length (bit)
 #define OOC_CW_LEN 640 // OOC codeword length (bit)
 
 #define SYMBOL_SIZE 8 // RECC ymbol size (GF(2^8)) -> optional use
 #define RECC_REDUN_SYMBOL_NUM 8 // rank-level ecc redundancy length (symbol) -> optional use
 
 #define AMDCHIPKILL_CW_SYMBOL_NUM 10 // AMD ecc codeword length (symbol) -> optional use
-#define QOC_CW_SYMBOL_NUM 40 // QOC ecc codeword length (symbol) -> optional use
+#define QPC_CW_SYMBOL_NUM 40 // QPC ecc codeword length (symbol) -> optional use
 #define OOC_CW_SYMBOL_NUM 80 // OOC ecc codeword length (symbol) -> optional use
 
 
-#define RUN_NUM 10000 // iteration
+#define RUN_NUM 100000 // iteration
 
 
 #define CONSERVATIVE_MODE 1 // 1: Conservavie mode, 0: Restrained mode
@@ -56,15 +56,14 @@
 #define OOC_tt  8           /* number of errors that can be corrected */
 #define OOC_kk  239           /* kk = nn-2*tt  */
 #define OOC_nn_short  80      /* length of codeword (shortened) */
-#define QOC_tt  4           /* number of errors that can be corrected */
-#define QOC_kk  247           /* kk = nn-2*tt  */
-#define QOC_nn_short  40      /* length of codeword (shortened) */
+#define QPC_tt  4           /* number of errors that can be corrected */
+#define QPC_kk  247           /* kk = nn-2*tt  */
+#define QPC_nn_short  40      /* length of codeword (shortened) */
 //----------------------------------
 
+// Configuration end
 
 
-
-//configuration over
 
 using namespace std;
 unsigned int H_Matrix_OECC[OECC_REDUN_LEN][OECC_CW_LEN]; // 8 x 64
@@ -73,7 +72,7 @@ unsigned int H_Matrix_RECC[RECC_REDUN_LEN][RECC_CW_LEN]; // 8 x 40
 unsigned int primitive_poly[16][256]={0,}; // primitive polynomial (ex : primitive_poly[4][254] = a^254, primitive_poly[4][255] = 0 (prim_num=4, primitive_poly = x^8+x^6+x^4+x^3+x^2+x^1+1))
 enum OECC_TYPE {OECC_OFF=0, OECC_ON=1}; // oecc_type
 enum FAULT_TYPE {SBE=0, PIN_1=1, SCE=2, DBE=3, TBE=4, SCE_SBE=5, SCE_DBE=6, SCE_SCE=7, RANK=8};
-enum RECC_TYPE {RECC_OFF=0, OOC=1, QOC=2, AMDCHIPKILL=3}; // recc_type
+enum RECC_TYPE {RECC_OFF=0, AMDCHIPKILL=1, QPC=2, OOC=3}; // recc_type
 enum RESULT_TYPE {NE=0, CE=1, DUE=2, SDC=3}; // result_type
 
 
@@ -105,6 +104,7 @@ unsigned int conversion_to_int_format(char *str_read, int m)
 
     return primitive_value;
 }
+
 
 // primitive polynomial table 
 void generate_primitive_poly(unsigned int prim_value, int m, int prim_num)
@@ -195,9 +195,9 @@ void oecc_recc_fault_type_assignment(string &OECC, string &FAULT, string &RECC, 
             RECC.replace(RECC.begin(), RECC.end(),"OOC");
             *recc_type=OOC;
             break;
-        case QOC:
-            RECC.replace(RECC.begin(), RECC.end(),"QOC");
-            *recc_type=QOC;
+        case QPC:
+            RECC.replace(RECC.begin(), RECC.end(),"QPC");
+            *recc_type=QPC;
             break;
         case AMDCHIPKILL:
             RECC.replace(RECC.begin(), RECC.end(),"AMDCHIPKILL");
@@ -208,6 +208,7 @@ void oecc_recc_fault_type_assignment(string &OECC, string &FAULT, string &RECC, 
     }
     return;
 }
+
 
 unsigned int index_of(unsigned int value){
     unsigned int p;
@@ -222,7 +223,6 @@ unsigned int index_of(unsigned int value){
 }
 
 
-
 // SE injection (Single Error injection)
 void error_injection_SE(unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
 {
@@ -234,7 +234,7 @@ void error_injection_SE(unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
         Chip_array[Fault_Chip_position][Fault_bit_position]=1;
         return;
     }
-    else if(recc_type==QOC){
+    else if(recc_type==QPC){
         int Fault_Chip_position = rand() % CHIP_NUM;
         int Fault_bit_position = rand() % OECC_CW_LEN;
 
@@ -250,7 +250,6 @@ void error_injection_SE(unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
     }
     
 }
-
 
 
 // DE injection (Double Error injection)
@@ -269,7 +268,7 @@ void error_injection_DBE(unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
         }
         return;
     }
-    else if(recc_type==QOC){
+    else if(recc_type==QPC){
         int count = 0;
         while (count<2){
             int Fault_Chip_position = rand() % CHIP_NUM;
@@ -314,7 +313,7 @@ void error_injection_TBE(unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
         }
         return;
     }
-    else if(recc_type==QOC){
+    else if(recc_type==QPC){
         int count = 0;
         while (count<3){
             int Fault_Chip_position = rand() % CHIP_NUM;
@@ -363,15 +362,13 @@ void error_injection_CHIPKILL(int Fault_Chip_position, unsigned int Chip_array[]
             if(rand()%2!=0) // 0(no error) 'or' 1(error)
                 Chip_array[Fault_Chip_position+10][Fault_pos]^=1;
         }
-
         return;
     }
-    else if(recc_type==QOC){
+    else if(recc_type==QPC){
         for(int Fault_pos=0; Fault_pos<OECC_CW_LEN; Fault_pos++){ // 0~63
             if(rand()%2!=0) // 0(no error) 'or' 1(error)
                 Chip_array[Fault_Chip_position][Fault_pos]^=1;
         }
-        
         return;
     }
     else if(recc_type==AMDCHIPKILL){
@@ -379,18 +376,14 @@ void error_injection_CHIPKILL(int Fault_Chip_position, unsigned int Chip_array[]
             if(rand()%2!=0) // 0(no error) 'or' 1(error)
                 Chip_array[Fault_Chip_position][Fault_pos]^=1;
         }
-        
         return;
     }    
 }
 
 
-
 // Pin_error injection
 void error_injection_pin(int Fault_Pin_position, unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
 {
-
-
     int Fault_Chip_position = Fault_Pin_position/4;
     int Fault_Chip_line = Fault_Pin_position % 4;
 
@@ -403,7 +396,7 @@ void error_injection_pin(int Fault_Pin_position, unsigned int Chip_array[][OECC_
         }
         return;
     }
-    else if(recc_type==QOC){
+    else if(recc_type==QPC){
         for(int Fault_pos=0; Fault_pos<8; Fault_pos++){
             if(rand()%2!=0) // 0(no error) 'or' 1(error)
                 Chip_array[Fault_Chip_position][8*Fault_Chip_line+Fault_pos]=1;
@@ -419,16 +412,13 @@ void error_injection_pin(int Fault_Pin_position, unsigned int Chip_array[][OECC_
         }
     }
 
-    
     return;
 }
-
 
 
 // RANK_error injection
 void error_injection_rank(unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
 {
-
     if (recc_type==OOC){
         for(int Fault_Chip_position=0; Fault_Chip_position<OOC_CHIP_NUM; Fault_Chip_position++){    
             for(int Fault_pos=0; Fault_pos<OOC_OECC_CW_LEN; Fault_pos++){ 
@@ -438,7 +428,7 @@ void error_injection_rank(unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
         }
         return;
     }
-    else if(recc_type==QOC){
+    else if(recc_type==QPC){
         for(int Fault_Chip_position=0; Fault_Chip_position<CHIP_NUM; Fault_Chip_position++){    
             for(int Fault_pos=0; Fault_pos<OECC_CW_LEN; Fault_pos++){ 
                 if(rand()%2!=0) // 0(no error) 'or' 1(error)
@@ -456,11 +446,7 @@ void error_injection_rank(unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
         }
         return;
     }
-
-
 }
-
-
 
 
 // OECC 1bit correction
@@ -712,8 +698,6 @@ int error_correction_OOC(unsigned int *codeword_OOC)
                     }
             }
 
-
- 
           return CE;
           /*
           printf("err (error values) : ");
@@ -743,22 +727,21 @@ int error_correction_OOC(unsigned int *codeword_OOC)
 }
 
 
-
 /*------------------------------------------------------------------
-                        QOC Correction
+                        QPC Correction
 -------------------------------------------------------------------*/
-int error_correction_QOC(unsigned int *codeword)
+int error_correction_QPC(unsigned int *codeword)
 {
    int i,j,u,q;
 
-   int elp[nn-QOC_kk+2][nn-QOC_kk], d[nn-QOC_kk+2], l[nn-QOC_kk+2], u_lu[nn-QOC_kk+2], s[nn-QOC_kk+1] ; 
-   int count=0, syn_error=0, root[QOC_tt], loc[QOC_tt], z[QOC_tt+1], err[nn], reg[QOC_tt+1]; 
-   unsigned int recd[QOC_nn_short] = {0};
+   int elp[nn-QPC_kk+2][nn-QPC_kk], d[nn-QPC_kk+2], l[nn-QPC_kk+2], u_lu[nn-QPC_kk+2], s[nn-QPC_kk+1] ; 
+   int count=0, syn_error=0, root[QPC_tt], loc[QPC_tt], z[QPC_tt+1], err[nn], reg[QPC_tt+1]; 
+   unsigned int recd[QPC_nn_short] = {0};
 
-  for (i=1; i<=2*QOC_tt; i++){
+  for (i=1; i<=2*QPC_tt; i++){
     s[i] = 0;
 
-    for(int symbol_index=0; symbol_index<QOC_CW_SYMBOL_NUM; symbol_index++){ // 0~39
+    for(int symbol_index=0; symbol_index<QPC_CW_SYMBOL_NUM; symbol_index++){ // 0~39
         unsigned exponent=255;
         unsigned symbol_value=0; // 0000_0000 ~ 1111_1111
 
@@ -791,7 +774,7 @@ int error_correction_QOC(unsigned int *codeword)
       d[1] = s[1] ;        /* index form */
       elp[0][0] = 0 ;      /* index form */
       elp[1][0] = 1 ;      /* polynomial form */
-      for (i=1; i<nn-QOC_kk; i++)
+      for (i=1; i<nn-QPC_kk; i++)
         { elp[0][i] = -1 ;   /* index form */
           elp[1][i] = 0 ;   /* polynomial form */
         }
@@ -831,7 +814,7 @@ int error_correction_QOC(unsigned int *codeword)
             else  l[u+1] = l[q]+u-q ;
 
 /* form new elp(x) */
-            for (i=0; i<nn-QOC_kk; i++)    elp[u+1][i] = 0 ;
+            for (i=0; i<nn-QPC_kk; i++)    elp[u+1][i] = 0 ;
             for (i=0; i<=l[q]; i++)
               if (elp[q][i]!=-1)
                 elp[u+1][i+u-q] = primitive_poly[0][(d[u]+nn-d[q]+elp[q][i])%nn] ;
@@ -843,7 +826,7 @@ int error_correction_QOC(unsigned int *codeword)
         u_lu[u+1] = u-l[u+1] ;
 
 /* form (u+1)th discrepancy */
-        if (u<nn-QOC_kk)    /* no discrepancy computed on last iteration */
+        if (u<nn-QPC_kk)    /* no discrepancy computed on last iteration */
           {
             if (s[u+1]!=-1)
                    d[u+1] = primitive_poly[0][s[u+1]] ;
@@ -854,7 +837,7 @@ int error_correction_QOC(unsigned int *codeword)
                 d[u+1] ^= primitive_poly[0][(s[u+1-i]+index_of(elp[u+1][i]))%nn] ;
             d[u+1] = index_of(d[u+1]) ;    /* put d[u+1] into index form */
           }
-      } while ((u<nn-QOC_kk) && (l[u+1]<=QOC_tt)) ;
+      } while ((u<nn-QPC_kk) && (l[u+1]<=QPC_tt)) ;
 
       u++ ;
 
@@ -863,7 +846,7 @@ int error_correction_QOC(unsigned int *codeword)
       ////////////////////////////////////////////////////
 
       // CE 'or' SDC cases
-      if (l[u]<=QOC_tt)         /* can correct error */
+      if (l[u]<=QPC_tt)         /* can correct error */
       {
 /* put elp into index form */
          for (i=0; i<=l[u]; i++)   elp[u][i] = index_of(elp[u][i]) ;
@@ -890,7 +873,7 @@ int error_correction_QOC(unsigned int *codeword)
         int CE_cases=1;
         //printf("error location check! (shortened RS code!)\n");
         for(int index=0; index<count; index++){
-          if(loc[index]>=QOC_nn_short) // except for zero-padding part!!
+          if(loc[index]>=QPC_nn_short) // except for zero-padding part!!
             CE_cases=0;
         }
         
@@ -953,8 +936,6 @@ int error_correction_QOC(unsigned int *codeword)
                     }
             }
 
-
- 
           return CE;
           /*
           printf("err (error values) : ");
@@ -984,13 +965,11 @@ int error_correction_QOC(unsigned int *codeword)
 }
 
 
-
 /*------------------------------------------------------------------
                         AMD Correction
 -------------------------------------------------------------------*/
 int error_correction_AMDCHIPKILL(unsigned int *codeword, set<int> &error_chip_position)
 {
-
     // Syndrome 
     // S0 = (a^exponent0) ^ (a^exponent1) ^ (a^exponent2) ... ^(a^exponent9)
     // S1 = (a^exponent0) ^ (a^[exponent1+1]) ^ (a^[exponent2+2]) ... ^ (a^[exponent9+9])
@@ -1014,7 +993,6 @@ int error_correction_AMDCHIPKILL(unsigned int *codeword, set<int> &error_chip_po
         if(exponent!=255) // S0 = (a^exponent0) ^ (a^exponent1) ^ (a^exponent2) ... ^(a^exponent9)
             S0^=primitive_poly[0][exponent];
     }
-
 
     // S1 
     for(int symbol_index=0; symbol_index<AMDCHIPKILL_CW_SYMBOL_NUM; symbol_index++){ // 0~9
@@ -1073,8 +1051,6 @@ int error_correction_AMDCHIPKILL(unsigned int *codeword, set<int> &error_chip_po
 }
 
 
-
-
 int SDC_check(int BL, unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
 {
 
@@ -1090,7 +1066,7 @@ int SDC_check(int BL, unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
             }
         }
     }
-    else if(recc_type==QOC){
+    else if(recc_type==QPC){
         for(int Error_chip_pos=0; Error_chip_pos<CHIP_NUM; Error_chip_pos++){
             for(int Fault_pos=32*BL; Fault_pos<32*BL+32; Fault_pos++){ 
                 if(Chip_array[Error_chip_pos][Fault_pos]==1){
@@ -1170,9 +1146,7 @@ int main(int argc, char* argv[])
     fclose(fp1);
 
 
-
     // 2. name of output files
-
     string OECC="X", RECC="X", FAULT="X"; 
     int oecc_type, recc_type, fault_type; // => on-die ECC, Rank-level ECC, fault_type 
     oecc_recc_fault_type_assignment(OECC, FAULT, RECC, &oecc_type, &fault_type, &recc_type, atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
@@ -1183,9 +1157,9 @@ int main(int argc, char* argv[])
     }
     FILE *fp3=fopen(Result_file_name.c_str(),"w"); 
 
+
     // 3. iteration
     unsigned int Chip_array[OOC_CHIP_NUM][OECC_CW_LEN]; // chip configuration
-
 
     int CE_cnt=0, DUE_cnt=0, SDC_cnt=0; // num of CE, DUE, SDC 
     srand((unsigned int)time(NULL)); 
@@ -1213,7 +1187,6 @@ int main(int argc, char* argv[])
                 Fault_Pin_position.push_back(random_position);
             }
         }
-
 
         switch (fault_type){
             case SBE: // 1bit
@@ -1263,7 +1236,6 @@ int main(int argc, char* argv[])
                 break;
         }
 
-
         // 4-4. RECC
         set<int> error_chip_position;
         int result_type_recc; // NE, CE, DUE, SDC 
@@ -1271,9 +1243,11 @@ int main(int argc, char* argv[])
         int Chip_idx=0;
         int isConservative=0;        
         switch(recc_type){
+
 /*------------------------------------------------------------------
                         OOC Case
--------------------------------------------------------------------*/            
+-------------------------------------------------------------------*/
+
             case OOC:
                 // 1st memory transfer block
                 unsigned int codeword_OOC[OOC_CW_LEN];
@@ -1291,7 +1265,6 @@ int main(int argc, char* argv[])
                     }
                     Chip_idx++;
                 }
-
 
                 // RECC implimentation
                 result_type_recc = error_correction_OOC(codeword_OOC); 
@@ -1311,7 +1284,6 @@ int main(int argc, char* argv[])
                     Chip_idx++;
                 }
 
-
                 // SDC check
                 if(result_type_recc==CE || result_type_recc==NE){
                     int error_check=SDC_check(0, Chip_array, recc_type);
@@ -1330,14 +1302,13 @@ int main(int argc, char* argv[])
                 break;
 
  /*------------------------------------------------------------------
-                        QOC Case
+                        QPC Case
 -------------------------------------------------------------------*/
-               
 
-            case QOC:
+            case QPC:
                 // 1st memory transfer block
 
-                unsigned int codeword[QOC_CW_LEN];
+                unsigned int codeword[QPC_CW_LEN];
                 Chip_idx=0;
                 while(Chip_idx<CHIP_NUM){
                     for(int Pin_num=0; Pin_num<CHIP_WIDTH; Pin_num++){
@@ -1353,10 +1324,8 @@ int main(int argc, char* argv[])
                     Chip_idx++;
                 }
 
-
-
                 // RECC implimentation
-                result_type_recc = error_correction_QOC(codeword); 
+                result_type_recc = error_correction_QPC(codeword); 
 
                 Chip_idx=0;
                 while(Chip_idx<CHIP_NUM){
@@ -1372,7 +1341,6 @@ int main(int argc, char* argv[])
                     }
                     Chip_idx++;
                 }
-
 
                 // SDC check
                 if(result_type_recc==CE || result_type_recc==NE){
@@ -1403,7 +1371,7 @@ int main(int argc, char* argv[])
                 }
 
                 // RECC implimentation
-                result_type_recc = error_correction_QOC(codeword); 
+                result_type_recc = error_correction_QPC(codeword); 
 
                 Chip_idx=0;
                 while(Chip_idx<CHIP_NUM){
@@ -1420,7 +1388,6 @@ int main(int argc, char* argv[])
                     Chip_idx++;
                 }
 
-
                 // SDC check
                 if(result_type_recc==CE || result_type_recc==NE){
                     int error_check=SDC_check(1, Chip_array, recc_type);
@@ -1432,17 +1399,14 @@ int main(int argc, char* argv[])
                 if(result_type_recc==DUE)
                     final_result_2=DUE;
 
-
                 // final result update
                 final_result = (final_result_1 > final_result_2) ? final_result_1 : final_result_2;
 
                 break;
 
-
  /*------------------------------------------------------------------
                         AMD Case
 -------------------------------------------------------------------*/
-
 
             case AMDCHIPKILL:
                 // 1st memory transfer block
@@ -1494,7 +1458,7 @@ int main(int argc, char* argv[])
                     if(CONSERVATIVE_MODE)
                         isConservative = (error_chip_position.size()>1) ? 1 : isConservative;                    
                 }
-                
+
                 if(final_result_1==NE || final_result_1==CE){
                     final_result_1 = (isConservative) ? DUE : CE;
                 }
@@ -1502,8 +1466,6 @@ int main(int argc, char* argv[])
                 // final result update
                 final_result = final_result_1;
                 break;
-
-
 
             case RECC_OFF:{
                 int error_check;
@@ -1516,14 +1478,11 @@ int main(int argc, char* argv[])
                 break;
         }
 
-
         // 4-5. CE/DUE/SDC check
 
         CE_cnt   += (final_result==CE)  ? 1 : 0;
         DUE_cnt  += (final_result==DUE) ? 1 : 0;
         SDC_cnt  += (final_result==SDC) ? 1 : 0;
-
-            
     }
 
     // final update 
@@ -1536,7 +1495,6 @@ int main(int argc, char* argv[])
     fflush(fp3);
 
     fclose(fp3);
-
 
     return 0;
 }
