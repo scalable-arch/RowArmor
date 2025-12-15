@@ -224,7 +224,7 @@ unsigned int index_of(unsigned int value){
 
 
 // SE injection (Single Error injection)
-void error_injection_SE(unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
+void error_injection_SE(int Fault_Chip_position_, unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
 {
 
     if (recc_type==OOC){
@@ -242,10 +242,9 @@ void error_injection_SE(unsigned int Chip_array[][OECC_CW_LEN], int recc_type)
         return;
     }
     else if(recc_type==AMDCHIPKILL){
-        int Fault_Chip_position = rand() % CHIP_NUM;
         int Fault_bit_position = rand() % OECC_CW_LEN;
 
-        Chip_array[Fault_Chip_position][Fault_bit_position]=1;
+        Chip_array[Fault_Chip_position_][Fault_bit_position]=1;
         return; 
     }
     
@@ -1190,7 +1189,7 @@ int main(int argc, char* argv[])
 
         switch (fault_type){
             case SBE: // 1bit
-                error_injection_SE(Chip_array, recc_type);
+                error_injection_SE(Fault_Chip_position[0], Chip_array, recc_type);
                 break;
             case PIN_1:
                 error_injection_pin(Fault_Pin_position[0],Chip_array, recc_type);           
@@ -1207,12 +1206,12 @@ int main(int argc, char* argv[])
                 break;
             case SCE_SBE:                   
                 error_injection_CHIPKILL(Fault_Chip_position[0],Chip_array, recc_type); 
-                error_injection_SE(Chip_array, recc_type); 
+                error_injection_SE(Fault_Chip_position[1], Chip_array, recc_type); 
                 break;
             case SCE_DBE:                
                 error_injection_CHIPKILL(Fault_Chip_position[0],Chip_array, recc_type);                     
-                error_injection_SE(Chip_array, recc_type); 
-                error_injection_SE(Chip_array, recc_type);  
+                error_injection_SE(Fault_Chip_position[1], Chip_array, recc_type); 
+                error_injection_SE(Fault_Chip_position[2], Chip_array, recc_type);  
                 break;
 
             case SCE_SCE: 

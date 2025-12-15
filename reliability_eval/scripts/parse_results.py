@@ -81,11 +81,11 @@ def main():
     # --- Print Final Result Table ---
     recc_names_ordered = [RECC_MAP[key] for key in sorted(RECC_MAP.keys()) if key in recc_params]
     
-    header = f"{'Error scenario':<22}"
+    header = f"{'Error scenario':<26}"
     for name in recc_names_ordered:
         header += f"{name.replace('_', ' '):>18}"
     print(header)
-    print("=" * len(header))
+    print("=" * (len(header)+3))
 
     fault_names_ordered = [FAULT_MAP[key][1] for key in sorted(FAULT_MAP.keys()) if key in fault_params]
 
@@ -99,7 +99,7 @@ def main():
                 line += f"{value:>18.4f}"
             
             print(line)
-        print("-" * len(header))
+        print("-" * (len(header)+3))
 
 
 if __name__ == "__main__":
