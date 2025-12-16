@@ -12,7 +12,11 @@ This repository provides the artifact for the ASPLOS Summer 2026 paper **RowArmo
   + [reliability_eval](): RowArmor's reliability evaluation directory (Table 4)
   + [perf_simulation](./perf_simulation/): RowArmor's performance simulation directory (Figure 9)
 
+
 ## Security Evaluation
+
+This artifact consists of the following components:
++ [RowArmor_security.xlsx](./security_eval/RowArmor_security.xlsx): This file evaluates the security level of each RowHammer defense scheme
 
 
 ## Reliability Evaluation
