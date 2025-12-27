@@ -146,7 +146,7 @@ First, download the trace files using the given [download_traces.py](./traces/do
 ```bash
 # Download the trace files.
 cd trace
-./download_traces.py
+python3 ./download_traces.py
 ```
 
 For configuration files, we provide the machine description files (mdfiles) in [mdfiles](./perf_simulation/mdfiles).
@@ -156,19 +156,9 @@ For runfiles, we provide the [generate_runfiles.py](./perf_simulation/runfiles/g
 ```bash
 # Generate simulator configuration files (runfiles)
 cd perf_simulation/runfiles
-./generate_runfiles.py -b <path-to-trace>
+python3 ./generate_runfiles.py -b <path-to-trace>
 # Example
-./generate_runfiles.py -b /home/RowArmor/perf_simulation/trace/cpu2017/
-```
-
-Lastly, we provide the [generate_simulation_scripts.py](./perf_simulation/simulation_scripts/generate_simulation_scripts.py) for generating scripts for running the simulations.
-
-```bash
-# Generate run scripts for simulation
-cd ./simulation_scripts
-./generate_simulation_scripts.py -b <path-to-mcsim>
-# Example
-./generate_simulation_scripts.py -b /home/RowArmor/perf_simulation/McSim/obj_mcsim/mcsim
+python3 ./generate_runfiles.py -b /home/RowArmor/perf_simulation/trace/cpu2017/
 ```
 
 ### Building McSimA+ simulator
@@ -218,8 +208,14 @@ We recommend using the provided scripts for running simulations in parallel.
 Inside the simulation_scripts folder:
 ```bash
 cd perf_simulation/simulation_scripts
-./generate_simulation_scripts.py
-./generate_run_all.py
+# Generate run scripts for simulation
+cd ./simulation_scripts
+python3 ./generate_simulation_scripts.py -b <path-to-mcsim>
+# Example
+python3 ./generate_simulation_scripts.py -b /home/RowArmor/perf_simulation/McSim/obj_mcsim/mcsim
+```
+```bash
+python3 ./generate_run_all.py
 ```
 These scripts generate all necessary per-workload run scripts, including run_all_benign.sh.
 
@@ -234,7 +230,7 @@ This executes all benign simulations in parallel using the generated scripts.
 After the initial simulation run, move to the results directory:
 ```bash
 cd ../results
-./rerun.py
+python3 ./rerun.py
 ```
 This script scans all .out files, detects simulations terminated with SIG11, and generates a rerun script:
 ```bash
@@ -260,7 +256,7 @@ For this, we provide two parsing scripts.
 
 ```bash
 cd results
-./parse_single.py
+python3  ./parse_single.py
 ```
 
 After parsing single IPCs, we need to modify the [parse_results.py]() scripts.
@@ -276,9 +272,9 @@ ipc_list = [
 
 Then, we can parse the results and generate csv files for graph:
 ```bash
-./parse_results.py
-./plot_csv.py
-./plot_figure9.py
+python3 ./parse_results.py
+python3 ./plot_csv.py
+python3 ./plot_figure9.py
 ```
 
 ## Contact
