@@ -151,18 +151,24 @@ cd trace
 
 For configuration files, we provide the machine description files (mdfiles) in [mdfiles](./perf_simulation/mdfiles).
 
-For runfiles, we provide the [generate_runfiles.py](./perf_simulation/runfiles/generate_runfiles.py) for generating runfiles (single, rate, and mix) with a given trace path.
+For runfiles, we provide the [generate_runfiles.py](./perf_simulation/runfiles/generate_runfiles.py) script to generate simulator runfiles (single, rate, and mix) using a given trace path.
+
 ```bash
-# Generate simulator's configuration files (runfiles)
-cd ../perf_simulation/runfiles
+# Generate simulator configuration files (runfiles)
+cd perf_simulation/runfiles
 ./generate_runfiles.py -b <path-to-trace>
+# Example
+./generate_runfiles.py -b /home/RowArmor/perf_simulation/trace/cpu2017/
 ```
 
 Lastly, we provide the [generate_simulation_scripts.py](./perf_simulation/simulation_scripts/generate_simulation_scripts.py) for generating scripts for running the simulations.
+
 ```bash
 # Generate run scripts for simulation
-cd ../simulation_scripts
-./generate_simulation_scripts.py
+cd ./simulation_scripts
+./generate_simulation_scripts.py -b <path-to-mcsim>
+# Example
+./generate_simulation_scripts.py -b /home/RowArmor/perf_simulation/McSim/obj_mcsim/mcsim
 ```
 
 ### Building McSimA+ simulator

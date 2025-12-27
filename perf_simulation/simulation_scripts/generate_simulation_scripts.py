@@ -137,7 +137,7 @@ def write_batched_sh(fname, cmd_list, batch_size=6):
         # batch loop
         f.write("for ((i=0; i<total; i+=batch_size)); do\n")
         f.write("    batch_id=$((i/batch_size+1))\n")
-        f.write("    echo \"=== Batch ${batch_id} 시작 (commands ${i} to $((i+batch_size-1))) ===\"\n")
+        f.write("    echo \"=== Batch ${batch_id} start (commands ${i} to $((i+batch_size-1))) ===\"\n")
         f.write("    unset pids outfiles cmds\n")
         f.write("    declare -a pids outfiles cmds\n\n")
 
