@@ -206,7 +206,6 @@ We recommend using the provided scripts for running simulations in parallel.
 
 Inside the simulation_scripts folder:
 ```bash
-cd perf_simulation/simulation_scripts
 # Generate run scripts for simulation
 cd ./simulation_scripts
 python3 ./generate_simulation_scripts.py -b <path-to-mcsim>
