@@ -116,7 +116,17 @@ def write_batched_sh(fname, cmd_list, batch_size=6):
     import os
     with open(fname, 'w') as f:
         f.write("#!/usr/bin/env bash\n\n")
-
+        # === SIGINT handler ===
+        f.write("cleanup_on_interrupt() {\n")
+        f.write("    echo \"\"\n")
+        f.write("    echo \"[INTERRUPT] Ctrl+C detected. Killing all 'ls' processes.\"\n")
+        f.write("    killall -9 ls || true\n")
+        f.write("    echo \"[INTERRUPT] Cleaning up background jobs...\"\n")
+        f.write("    jobs -p | xargs -r kill -9 2>/dev/null\n")
+        f.write("    exit 130\n")
+        f.write("}\n")
+        f.write("trap cleanup_on_interrupt INT\n\n")
+        
         # run_cmd
         f.write("run_cmd() {\n")
         f.write("    local cmd=\"$1\"\n")
