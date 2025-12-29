@@ -40,7 +40,6 @@ def extract_commands_from_block(block: str) -> List[str]:
     
     for s in re.finditer(r'"([^"\\]*(?:\\.[^"\\]*)*)"|\'([^\'\\]*(?:\\.[^\'\\]*)*)\'', block, flags=re.DOTALL):
         item = s.group(1) if s.group(1) is not None else s.group(2)
-        # 이스케이프 제거(간단 처리)
         item = item.replace('\\"', '"').replace("\\'", "'")
         cmds.append(item)
     return cmds
@@ -161,6 +160,17 @@ def main():
     lines.append("ulimit -v unlimited")
     lines.append("ulimit -m unlimited")
     lines.append("ulimit -n 65535")
+    lines.append("")
+    # === SIGINT handler ===
+    lines.append("cleanup_on_interrupt() {")
+    lines.append("    echo \"\"")
+    lines.append("    echo \"[INTERRUPT] Ctrl+C detected. Killing all 'ls' processes.\"")
+    lines.append("    killall -9 ls || true")
+    lines.append("    echo \"[INTERRUPT] Cleaning up background jobs...\"")
+    lines.append("    jobs -p | xargs -r kill -9 2>/dev/null")
+    lines.append("    exit 130")
+    lines.append("}")
+    lines.append("trap cleanup_on_interrupt INT")
     lines.append("")
     lines.append("run_cmd() {")
     lines.append('    local cmd="$1"')

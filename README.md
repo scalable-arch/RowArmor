@@ -191,7 +191,6 @@ make INCS=-I"$(pwd)"/../pin/extras/xed-intel64/include/xed -j
 
 # or you can source and run given scripts
 source setup_mcsim
-./build_mcsim.sh
 ```
 
 ### Running experiments
@@ -223,7 +222,7 @@ These scripts generate all necessary per-workload run scripts, including run_all
 ```bash
 ./run_all_benign.sh
 ```
-This executes all benign simulations in parallel using the generated scripts.
+This executes all benign simulations using the generated scripts.
 
 3. Handling Failed Simulations (SIG11)
 
