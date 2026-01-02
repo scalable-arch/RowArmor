@@ -28,9 +28,9 @@ scheme_style = {
 # Workloads / subplots
 # -----------------------------
 workload_map = {
-    "mix": "Mix",
-    "mix_high": "Mix-High",
     "rate": "Rate",
+    "mix_high": "Mix-High",
+    "mix": "Mix-Rand",
 }
 
 # -----------------------------
@@ -135,7 +135,7 @@ handles = [
 handles.append(
     plt.Line2D([], [], color=scheme_style["rowarmor"][0],
                linestyle="--", linewidth=2.5,
-               label="ROWARMOR (threshold-independent)")
+               label="ROWARMOR")
 )
 
 fig.legend(
@@ -150,5 +150,4 @@ fig.legend(
 # Save
 # -----------------------------
 plt.tight_layout(rect=[0, 0, 1, 0.95])
-plt.savefig("rh_performance_final.png", dpi=300, bbox_inches="tight")
-# plt.show()  # intentionally disabled for server/AE environments
+plt.savefig("perf_example_reulsts.pdf", dpi=300, bbox_inches="tight")

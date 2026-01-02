@@ -155,12 +155,23 @@ def main():
 
     lines = []
     lines.append("#!/usr/bin/env bash")
+    
     lines.append("")
     lines.append("ulimit -s unlimited")
     lines.append("ulimit -v unlimited")
     lines.append("ulimit -m unlimited")
     lines.append("ulimit -n 65535")
     lines.append("")
+    
+    lines.append("cd ../Pthread")
+    lines.append('make PIN_ROOT="$(pwd)"/../pin obj-intel64/mypthreadtool.so -j')
+    lines.append('make PIN_ROOT="$(pwd)"/../pin obj-intel64/libmypthread.a')
+    lines.append("")
+    lines.append("cd ../McSim")
+    lines.append("source setup_mcsim")
+    lines.append("")
+
+    lines.append("cd ../simulation_scripts")
     # === SIGINT handler ===
     lines.append("cleanup_on_interrupt() {")
     lines.append("    echo \"\"")
