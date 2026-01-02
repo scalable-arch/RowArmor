@@ -202,6 +202,24 @@ setarch x86_64 -R ./simulator/McSim/obj_mcsim/mcsim -runfile <path-to-runfile> -
 
 We recommend using the provided scripts for running simulations in parallel.
 
+## (Optional) **Patch instruction limit for practical simulation**
+To ensure that simulations complete within a reasonable time, we provide a helper script that limits the maximum number of executed instructions.
+
+Before generating simulation scripts, you may optionally run:
+```bash
+# Generate run scripts for simulation
+cd ./mdfiles/benign/
+python3 patch_max_total_instrs.py
+```
+This script updates Python configuration files by changing max_total_instrs from 100000000 to 1000000.
+
+We have verified that this change does not affect functional behavior or overall performance trends, and that the qualitative conclusions remain unchanged.
+
+With this limit enabled, the full set of simulations typically completes within one day.
+
+To reproduce the original full-length simulations, simply skip this step.
+
+
 1. Generate simulation scripts
 
 Inside the simulation_scripts folder:
