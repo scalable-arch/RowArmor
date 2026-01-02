@@ -203,6 +203,7 @@ setarch x86_64 -R ./simulator/McSim/obj_mcsim/mcsim -runfile <path-to-runfile> -
 We recommend using the provided scripts for running simulations in parallel.
 
 (Optional) Patch instruction limit for practical simulation
+
 To ensure that simulations complete within a reasonable time, we provide a helper script that limits the maximum number of executed instructions.
 
 Before generating simulation scripts, you may optionally run:
