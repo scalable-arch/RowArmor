@@ -147,6 +147,7 @@ First, download the trace files using the given [download_traces.py](./traces/do
 # Download the trace files.
 cd trace
 python3 ./download_traces.py
+tar -zxvf cpu2017.trace.tar.gz
 ```
 
 For configuration files, we provide the machine description files (mdfiles) in [mdfiles](./perf_simulation/mdfiles).
