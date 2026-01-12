@@ -18,6 +18,7 @@ This repository provides the artifact for the ASPLOS Summer 2026 paper **RowArmo
 This artifact consists of the following components:
 + [RowArmor_security.xlsx](./security_eval/RowArmor_security.xlsx): This file evaluates the security level of each RowHammer defense scheme
 
+For convenience, the same spreadsheet is also available online (view-only) [`here`](https://o365skku-my.sharepoint.com/:x:/g/personal/g24067yjs_o365_skku_edu/IQCb71ezdZ-ERKGizi3nBtK9AWYYc0EOunUj_EocafjHkXc?e=tV3F2D).
 
 ## Reliability Evaluation
 
